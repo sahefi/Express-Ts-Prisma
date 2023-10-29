@@ -275,6 +275,7 @@ async(req:Request,res:Response)=>{
         status : false,
         message : 'Game Already Exist',
         data : null
+        
       })
     }
     }
