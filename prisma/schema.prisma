@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:1234@localhost:5432/postgres?schema=public"
+}
+
+model Game{
+  id        String   @id@default(uuid())
+  nama      String   @unique
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt 
+
+  users User[]
+
+}
+
+model User{
+  id        String   @id@default(uuid())
+  nama      String   
+  createdAt DateTime @default(now())
+  updateAt  DateTime @updatedAt 
+  deletedAt   DateTime?
+  umur      String?
+
+
+  games Game[]
+}
