@@ -149,7 +149,8 @@ app.get('/users/all', async(req: Request, res: Response) => {
 
 app.get('/user/detail/:id',async(req:Request,res:Response)=>{
     const id = req.params.id
-    console.log(id)
+    
+    
     const userDetail = await prisma.user.findUnique({
       where:{
         id:id 
