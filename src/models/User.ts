@@ -19,6 +19,26 @@ export interface IUser {
   role?: UserRoles;
 }
 
+export interface ICreateUser{
+  nama: string;
+  umur: string;
+}
+
+export interface IFilterList{
+  nama: string;
+  umur: string;
+}
+
+export interface IUpdateUser{
+  id: string;
+  nama: string;
+  umur: string;
+}
+
+export interface IDeleteUser{
+ id: string;
+}
+
 export interface ISessionUser {
   id: number;
   email: string;

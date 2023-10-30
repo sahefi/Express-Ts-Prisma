@@ -20,8 +20,10 @@ import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import { NodeEnvs } from '@src/constants/misc';
 import { RouteError } from '@src/other/classes';
 import {PrismaClient} from "@prisma/client"
-import User from './models/User';
+import User, { IDeleteUser, IUpdateUser } from './models/User';
 import UserService from './services/UserService';
+import { createValidator, deleteValidator, updateValidator } from './services/Validations/UserValidations';
+
 
 
 // **** Variables **** //
@@ -84,69 +86,53 @@ app.get('/', (_: Request, res: Response) => {
   return res.redirect('/users');
 });
 
-app.post('/users/add',async(req: Request, res: Response)=>{
-  try {
-    const dataUser = req.body.user
-    const newUser = await prisma.user.createMany({
-      data:dataUser,
-      skipDuplicates: true
-    })
-    return res.send({
-      status : true,
-      message : "Succes Create Users",
-      data : dataUser
-    })
-  } catch (error) {
-    return res.status(400).send({
-      status : true,
-      message : "Failed Create Users",
-      data : null
+app.post('/users/add',createValidator,async(req: Request, res: Response)=>{
+  const error = validationResult(req)
+  if(!error.isEmpty()){
+    res.status(400).send({
+      status:true,
+      message:error.array()
     })
   }
+  const dataUser = req.body.user
+ try {
+   const newUser = await UserService.createUser(dataUser)
+   return res.send({
+    status : true,
+    message: 'Success Create Data',
+    data:dataUser
+   })
+ } catch (error) {
+  res.status(500).send({
+    status: false,
+    message: "Error: " + error.message,
+    data: null,
+  })
+ }
+
 })
 
 // Redirect to login if not logged in.
 app.get('/users/all', async(req: Request, res: Response) => {
-  try {
-    const {filter_nama} = req.query
+    const filter_nama = req.query.filter_nama as String
+    try {
+        console.log(filter_nama)
+        const userList = await UserService.getUser(filter_nama);
+        res.send({
+          status:true,
+          message:'Succes Get Data',
+          data:userList
+        })
 
-    if(!filter_nama){    
-      const user = await prisma.user.findMany({
-        where:{
-          deletedAt:null
-        },orderBy:{
-          nama : "asc"
-        }
-      })
-
-      return res.send({
-        Status : true,
-        message : "Succes",
-        data : user
-      })
-    }else{
-      const user = await prisma.user.findMany({
-        where:{
-          nama:{
-            mode: 'insensitive',
-            contains: String(filter_nama)
-          },
-          deletedAt:null
-        }
-      })
-      return res.send({
-        status: true,
-        message:'berhasil',
-        data: user
-      })
+    } catch (error) {
+      res.status(500).send({
+        status: false,
+        message: "Error: " + error.message,
+        data: null,
+      });
     }
-  } catch (error) {
-    return res.status(400).send({
-      Status : false,
-      message : "Failed",
-      data : []
-    })
-  }
+
+    
 });
 
 app.get('/user/detail/:id',async(req:Request,res:Response)=>{
@@ -154,7 +140,7 @@ app.get('/user/detail/:id',async(req:Request,res:Response)=>{
   console.log(id);
 
   try {
-    const userDetail = await UserService.getDetail(id);
+    const userDetail = await UserService.getDetail(id)
 
     res.send({
       status: true,
@@ -171,34 +157,22 @@ app.get('/user/detail/:id',async(req:Request,res:Response)=>{
 
 })
 
-app.post('/user/update',async(req:Request,res:Response)=>{
-  const nama = req.body.nama
-  const id = req.body.id
-
-  const userId = await prisma.user.findUnique({
-    where:{
-      id:id
-    }
+app.post('/user/update',updateValidator,async(req:Request,res:Response)=>{
+  const error = validationResult(req)
+  if(!error.isEmpty()){
+  res.status(400).send({
+    status:true,
+    message:error.array()
   })
-  if(!userId){
-    throw Error ("Detail Not found")
-  }
-  
+}
+  const reqDto = req.body as IUpdateUser
 
-  const userUpdate = await prisma.user.update({
-    where:{
-      id
-    },
-    data:{nama}
-
+  const userId = await UserService.updateUser(reqDto)
+  res.send({
+    status:true,
+    message:'Succes Update Data',
+    data: reqDto
   })
-  return res.send({
-    status : true,
-    message : "Succes Update",
-    data : userUpdate 
-  })
-
-
 })
 
 app.delete('/user/delete',async(req:Request,res:Response)=>{
@@ -215,22 +189,30 @@ app.delete('/user/delete',async(req:Request,res:Response)=>{
   })
 })
 
-app.delete('/user/softdelete',async(req:Request,res:Response)=>{
-  const {id} = req.body
-  const now = new Date()
-  const softDelete = await prisma.user.update({
-      where: {
-        id:id
-      },
-      data:{
-        deletedAt: now
-      }
+app.delete('/user/softdelete',deleteValidator,async(req:Request,res:Response)=>{
+  const error = validationResult(req)
+  if(!error.isEmpty()){
+    res.status(400).send({
+    status:true,
+    message:error.array()
     })
-    return res.send({
-      status : true,
-      message : 'Succes Delete',
-      data : softDelete
-    })
+  }
+  try {
+  const reqDto = req.body as IDeleteUser
+  const deletUser = await UserService.deletUser(reqDto)
+  res.send({
+    status:true,
+    message: 'Succes Delete Data',
+    data:deletUser
+  })
+  } catch (error) {
+    res.status(500).send({
+      status: false,
+      message: "Error: " + error.message,
+      data: null,
+    });
+  }
+  
    
 })
 
