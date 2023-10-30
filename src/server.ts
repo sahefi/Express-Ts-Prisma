@@ -21,12 +21,14 @@ import { NodeEnvs } from '@src/constants/misc';
 import { RouteError } from '@src/other/classes';
 import {PrismaClient} from "@prisma/client"
 import User from './models/User';
+import UserService from './services/UserService';
 
 
 // **** Variables **** //
 const { body,query, param, check, validationResult } = require('express-validator');
 const app = express();
 const prisma = new PrismaClient()
+app.locals.prisma = prisma;
 
 // **** Setup **** //
 
@@ -148,21 +150,24 @@ app.get('/users/all', async(req: Request, res: Response) => {
 });
 
 app.get('/user/detail/:id',async(req:Request,res:Response)=>{
-    const id = req.params.id
-    console.log(id)
-    const userDetail = await prisma.user.findUnique({
-      where:{
-        id:id 
-      }
-    })
-    if(!userDetail){
-      throw Error ("Detail Not found")
-    }
-    return res.send({
-      status : true,
-      message : "Succes Get Detail",
-      data : userDetail 
-    })
+  const id = req.params.id;
+  console.log(id);
+
+  try {
+    const userDetail = await UserService.getDetail(id);
+
+    res.send({
+      status: true,
+      message: "Success Get Detail",
+      data: userDetail,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: false,
+      message: "Error: " + error.message,
+      data: null,
+    });
+  }
 
 })
 
@@ -304,4 +309,4 @@ async(req:Request,res:Response)=>{
 
 // **** Export default **** //
 
-export default app;
+export { app, prisma };
