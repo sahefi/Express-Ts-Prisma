@@ -20,9 +20,9 @@ import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import { NodeEnvs } from '@src/constants/misc';
 import { RouteError } from '@src/other/classes';
 import {PrismaClient} from "@prisma/client"
-import User, { IDeleteUser, IUpdateUser } from './models/User';
+import User, { IAddGame, IAssigneGame, IDeleteUser, IUpdateUser } from './models/User';
 import UserService from './services/UserService';
-import { createValidator, deleteValidator, updateValidator } from './services/Validations/UserValidations';
+import { addGameValidator, assignedValidator, createValidator, deleteValidator, updateValidator } from './services/Validations/UserValidations';
 
 
 
@@ -236,12 +236,7 @@ app.post('/user/restore',async(req:Request,res:Response)=>{
 
 //Game End Point
 
-app.post('/game/add',
-[ 
-body('game').isArray(),
-body('game.*.nama').notEmpty().withMessage('Tidak Boleh Kosong').isString().withMessage('Harus String'),
-],
-async(req:Request,res:Response)=>{
+app.post('/game/add',addGameValidator,async(req:Request,res:Response)=>{
   const error = validationResult(req)
   if(!error.isEmpty()){
   res.status(400).send({
@@ -249,40 +244,48 @@ async(req:Request,res:Response)=>{
     message:error.array()
   })
 }
-  const gameData = req.body.game
+  const reqDto = req.body.game 
   try {
-    for(const data of gameData){
-      const existingGame = await prisma.game.findUnique({
-      where:{
-        nama:data.nama
-      }
-    })
-    if(existingGame){
-      return res.status(400).send({
-        status : false,
-        message : 'Game Already Exist',
-        data : null
-        
-      })
-    }
-    }
-    const addGame = await prisma.game.createMany({
-      data:gameData
-    })
+    const addGame = await UserService.addGame(reqDto)
     return res.status(200).send({
       status : true,
       message : 'Succes Create Game Data',
-      data : gameData
+      data : reqDto
     })
   } catch (error) {
-    
-    
     res.status(400).send({
       status : false,
       message : error.message,
       data : null
     })
   }
+
+})
+
+app.post('/game/assigned',assignedValidator,async(req:Request,res:Response)=>{
+  const error = validationResult(req)
+  if(!error.isEmpty()){
+  res.status(400).send({
+    status:true,
+    message:error.array()
+  })
+}
+try {
+  const reqDto = req.body as IAssigneGame
+const assignedGame = await UserService.assignedGame(reqDto)
+res.send({
+  status : true,
+  message : 'Succes Assigned Game',
+  data : assignedGame
+})
+
+} catch (error) {
+  res.status(400).send({
+    status : false,
+    message : error.message,
+    data : null
+  })
+}
 
 })
 

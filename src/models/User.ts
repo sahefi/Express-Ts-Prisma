@@ -46,6 +46,15 @@ export interface ISessionUser {
   role: IUser['role'];
 }
 
+export interface IAddGame {
+  nama : string;
+}
+
+export interface IAssigneGame {
+  user_id:string;
+  id : string
+}
+
 
 // **** Functions **** //
 

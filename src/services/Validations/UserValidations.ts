@@ -14,3 +14,12 @@ export const updateValidator = [
 export const deleteValidator = [
     body('id').notEmpty().withMessage('ID Tidak Boleh Kosong').isString().withMessage('ID Harus String')
 ]
+
+export const addGameValidator = [
+    body('game.*.nama').notEmpty().withMessage('Tidak Boleh Kosong').isString().withMessage('Harus String')
+]
+
+export const assignedValidator = [
+    body('id').notEmpty().withMessage('ID Tidak Boleh Kosong').isString().withMessage('ID Harus String'),
+    body('user_id').notEmpty().withMessage('User ID Tidak Boleh Kosong').isString().withMessage('User ID Harus String')
+]

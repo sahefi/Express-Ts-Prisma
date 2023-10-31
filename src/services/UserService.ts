@@ -1,5 +1,5 @@
 import UserRepo from '@src/repos/UserRepo';
-import { ICreateUser, IDeleteUser, IUpdateUser, IUser } from '@src/models/User';
+import { IAddGame, IAssigneGame, ICreateUser, IDeleteUser, IUpdateUser, IUser } from '@src/models/User';
 import { RouteError } from '@src/other/classes';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import {prisma} from '@src/server';
@@ -169,6 +169,55 @@ async function deletUser(req:IDeleteUser) {
   
 }
 
+
+//End Point Game
+
+//Add Game
+async function addGame(req:IAddGame[]) {
+    const arrayReq = req.map((item)=>item.nama)
+    const existingGame = await prisma.game.findMany({
+      where :{
+        nama:{
+          in:arrayReq
+        }
+      }
+    })
+    if (existingGame.length>0){
+      throw new Error ('Game Already Exist')
+
+    }
+  
+  const addGame = await prisma.game.createMany({
+    data:req,
+    skipDuplicates:true
+  })
+  return addGame
+
+}
+
+
+async function assignedGame(req:IAssigneGame) {
+
+  const findgame = await prisma.game.findUnique({
+    where : {
+      id:req.id
+    }
+  })
+  if(!findgame){
+    throw new Error ('Failed Find Game')
+  }
+
+  const assignedGame = await prisma.game.update({
+    where:{
+      id:req.id
+    },
+    data:{user_id:req.user_id}
+  })
+  return assignedGame
+
+  
+  
+}
 // **** Export default **** //
 
 export default {
@@ -176,6 +225,8 @@ export default {
   updateUser,
   createUser,
   deletUser,
+  addGame,
+  assignedGame,
   getAll,
   getDetail,
   addOne,

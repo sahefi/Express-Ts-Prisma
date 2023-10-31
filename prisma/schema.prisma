@@ -13,10 +13,11 @@ datasource db {
 model Game{
   id        String   @id@default(uuid())
   nama      String   @unique
+  user_id   String?
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt 
+  users User? @relation(fields: [user_id], references: [id])
 
-  users User[]
 
 }
 
@@ -25,7 +26,7 @@ model User{
   nama      String   
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt 
-  deletedAt   DateTime?
+  deletedAt DateTime?
   umur      String?
 
 
