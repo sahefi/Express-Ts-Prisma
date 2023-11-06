@@ -1,5 +1,5 @@
 import UserRepo from '@src/repos/UserRepo';
-import { IAddGame, IAssigneGame, ICreateUser, IDeleteUser, IUpdateUser, IUser } from '@src/models/User';
+import User, { IAddGame, IAssigneGame, ICreateUser, IDeleteUser, IReqFilter, IRespListUserGame, IUpdateUser, IUser } from '@src/models/User';
 import { RouteError } from '@src/other/classes';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import {prisma} from '@src/server';
@@ -62,15 +62,15 @@ async function _delete(id: number): Promise<void> {
 
 // User Query Get All
 
-async function getUser(nama_user?:String) {
+async function getUser(name_user?:String) {
   
-  if(!nama_user){ 
-    console.log('ini nama user',nama_user)   
+  if(!name_user){ 
+    console.log('ini name user',name_user)   
     const user = await prisma.user.findMany({
       where:{
         deletedAt:null
       },orderBy:{
-        nama : "asc"
+        name : "asc"
       }
     })
     console.log(user)
@@ -79,12 +79,12 @@ async function getUser(nama_user?:String) {
     }
     return user;
   }else{
-    console.log(nama_user)
+    console.log(name_user)
     const user = await prisma.user.findMany({
       where:{
-        nama:{
+        name:{
           mode: 'insensitive',
-          contains: String(nama_user)
+          contains: String(name_user)
         },
         deletedAt:null
       }
@@ -111,19 +111,19 @@ async function getDetail(id_user:string) {
   return userDetail;
 }
 
-async function createUser(dataUser:ICreateUser[]) {
-  try {
-    const newUser = await prisma.user.createMany({
-      data:dataUser,
-      skipDuplicates: true
-    })
-    return newUser
-  } catch (error) {
-    throw new Error('Error' + error)
-  }
-}
+// async function createUser(dataUser:ICreateUser[]) {
+//   try {
+//     const newUser = await prisma.user.createMany({
+//       data:dataUser,
+//       skipDuplicates: true
+//     })
+//     return newUser
+//   } catch (error) {
+//     throw new Error('Error' + error)
+//   }
+// }
 
-// User Update nama
+// User Update name
 async function updateUser(req : IUpdateUser) {
   const userId = await prisma.user.findUnique({
     where:{
@@ -139,8 +139,8 @@ async function updateUser(req : IUpdateUser) {
       id:req.id
     },
     data:{
-      nama:req.nama,
-      umur:req.umur
+      name:req.name,
+      age:req.age
     }
   })
   if(!userUpdate){
@@ -169,64 +169,45 @@ async function deletUser(req:IDeleteUser) {
   
 }
 
+async function listUserGame(req:IReqFilter) {
+  
+  const query = await prisma.user.findMany({
+    include:{
+      games:true
+    },
+    where:{
+      AND:[
+        {name:{mode:'insensitive',contains:req.name_user}},
+        {games:{some:{name:{mode:'insensitive',contains:req.name_game}}}}
+      ]
+    },
+    
+  })
+
+  const result:IRespListUserGame[]= query.map((user)=>({
+    name_user : user.name,
+    game: user.games.map((game)=>({
+      id_game : game.id,
+      name_game : game.name
+    }))
+  }))
+  return result
+  
+}
+
 
 //End Point Game
 
 //Add Game
-async function addGame(req:IAddGame[]) {
-    const arrayReq = req.map((item)=>item.nama)
-    const existingGame = await prisma.game.findMany({
-      where :{
-        nama:{
-          in:arrayReq
-        }
-      }
-    })
-    if (existingGame.length>0){
-      throw new Error ('Game Already Exist')
 
-    }
-  
-  const addGame = await prisma.game.createMany({
-    data:req,
-    skipDuplicates:true
-  })
-  return addGame
-
-}
-
-
-async function assignedGame(req:IAssigneGame) {
-
-  const findgame = await prisma.game.findUnique({
-    where : {
-      id:req.id
-    }
-  })
-  if(!findgame){
-    throw new Error ('Failed Find Game')
-  }
-
-  const assignedGame = await prisma.game.update({
-    where:{
-      id:req.id
-    },
-    data:{user_id:req.user_id}
-  })
-  return assignedGame
-
-  
-  
-}
 // **** Export default **** //
 
 export default {
   getUser,
   updateUser,
-  createUser,
+  // createUser,
   deletUser,
-  addGame,
-  assignedGame,
+  listUserGame,
   getAll,
   getDetail,
   addOne,

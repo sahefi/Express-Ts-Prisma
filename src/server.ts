@@ -21,14 +21,19 @@ import { NodeEnvs } from '@src/constants/misc';
 import { RouteError } from '@src/other/classes';
 import {PrismaClient} from "@prisma/client"
 import User, { IAddGame, IAssigneGame, IDeleteUser, IUpdateUser } from './models/User';
-import UserService from './services/UserService';
+import UserService from './services/User/UserService';
 import { addGameValidator, assignedValidator, createValidator, deleteValidator, updateValidator } from './services/Validations/UserValidations';
+import userController from './api/User/userController';
+import gameController from './api/Game/gameController';
+import categoryController from './api/Category/categoryController';
+import authController from './api/Auth/AuthController';
 
 
 
 // **** Variables **** //
 const { body,query, param, check, validationResult } = require('express-validator');
 const app = express();
+const router = express.Router()
 const prisma = new PrismaClient()
 app.locals.prisma = prisma;
 
@@ -86,107 +91,112 @@ app.get('/', (_: Request, res: Response) => {
   return res.redirect('/users');
 });
 
-app.post('/users/add',createValidator,async(req: Request, res: Response)=>{
-  const error = validationResult(req)
-  if(!error.isEmpty()){
-    res.status(400).send({
-      status:true,
-      message:error.array()
-    })
-  }
-  const dataUser = req.body.user
- try {
-   const newUser = await UserService.createUser(dataUser)
-   return res.send({
-    status : true,
-    message: 'Success Create Data',
-    data:dataUser
-   })
- } catch (error) {
-  res.status(500).send({
-    status: false,
-    message: "Error: " + error.message,
-    data: null,
-  })
- }
+app.use('/users',userController)
+app.use('/game',gameController)
+app.use('/category',categoryController)
+app.use('/auth',authController)
 
-})
+// app.post('/users/add',createValidator,async(req: Request, res: Response)=>{
+//   const error = validationResult(req)
+//   if(!error.isEmpty()){
+//     res.status(400).send({
+//       status:true,
+//       message:error.array()
+//     })
+//   }
+//   const dataUser = req.body.user
+//  try {
+//    const newUser = await UserService.createUser(dataUser)
+//    return res.send({
+//     status : true,
+//     message: 'Success Create Data',
+//     data:dataUser
+//    })
+//  } catch (error) {
+//   res.status(500).send({
+//     status: false,
+//     message: "Error: " + error.message,
+//     data: null,
+//   })
+//  }
+
+// })
 
 // Redirect to login if not logged in.
-app.get('/users/all', async(req: Request, res: Response) => {
-    const filter_nama = req.query.filter_nama as String
-    try {
-        console.log(filter_nama)
-        const userList = await UserService.getUser(filter_nama);
-        res.send({
-          status:true,
-          message:'Succes Get Data',
-          data:userList
-        })
+// app.get('/users/all', async(req: Request, res: Response) => {
+//     const filter_nama = req.query.filter_nama as String
+//     try {
+//         console.log(filter_nama)
+//         const userList = await UserService.getUser(filter_nama);
+//         res.send({
+//           status:true,
+//           message:'Succes Get Data',
+//           data:userList
+//         })
 
-    } catch (error) {
-      res.status(500).send({
-        status: false,
-        message: "Error: " + error.message,
-        data: null,
-      });
-    }
+//     } catch (error) {
+//       res.status(500).send({
+//         status: false,
+//         message: "Error: " + error.message,
+//         data: null,
+//       });
+//     }
 
     
-});
+// });
 
-app.get('/user/detail/:id',async(req:Request,res:Response)=>{
-  const id = req.params.id;
+// app.get('/user/detail/:id',async(req:Request,res:Response)=>{
+//   const id = req.params.id;
 
-  try {
-    const userDetail = await UserService.getDetail(id)
+//   try {
+//     const userDetail = await UserService.getDetail(id)
 
-    res.send({
-      status: true,
-      message: "Success Get Detail",
-      data: userDetail,
-    });
-  } catch (error) {
-    res.status(500).send({
-      status: false,
-      message: "Error: " + error.message,
-      data: null,
-    });
-  }
+//     res.send({
+//       status: true,
+//       message: "Success Get Detail",
+//       data: userDetail,
+//     });
+//   } catch (error) {
+//     res.status(500).send({
+//       status: false,
+//       message: "Error: " + error.message,
+//       data: null,
+//     });
+//   }
 
-})
+// })
 
-app.post('/user/update',updateValidator,async(req:Request,res:Response)=>{
-  const error = validationResult(req)
-  if(!error.isEmpty()){
-  res.status(400).send({
-    status:true,
-    message:error.array()
-  })
-}
-  const reqDto = req.body as IUpdateUser
+// app.post('/user/update',updateValidator,async(req:Request,res:Response)=>{
+//   const error = validationResult(req)
+//   if(!error.isEmpty()){
+//   res.status(400).send({
+//     status:true,
+//     message:error.array()
+//   })
+// }
+//   const reqDto = req.body as IUpdateUser
 
-  const userId = await UserService.updateUser(reqDto)
-  res.send({
-    status:true,
-    message:'Succes Update Data',
-    data: reqDto
-  })
-})
+//   const userId = await UserService.updateUser(reqDto)
+//   res.send({
+//     status:true,
+//     message:'Succes Update Data',
+//     data: reqDto
+//   })
+// })
 
-app.delete('/user/delete',async(req:Request,res:Response)=>{
-  const id = req.body.id
-  const userDelete = await prisma.user.delete({
-    where:{
-      id:id
-    }
-  })
-  return res.send({
-    status : true,
-    message : "Succes Delete",
-    data : userDelete 
-  })
-})
+// app.delete('/user/delete',async(req:Request,res:Response)=>{
+//   const id = req.body.id
+//   const userDelete = await prisma.user.delete({
+//     where:{
+//       id:id
+//     }
+//   })
+//   return res.send({
+//     status : true,
+//     message : "Succes Delete",
+//     data : userDelete 
+//   })
+// })
 
 app.delete('/user/softdelete',deleteValidator,async(req:Request,res:Response)=>{
   const error = validationResult(req)
@@ -235,58 +245,58 @@ app.post('/user/restore',async(req:Request,res:Response)=>{
 
 //Game End Point
 
-app.post('/game/add',addGameValidator,async(req:Request,res:Response)=>{
-  const error = validationResult(req)
-  if(!error.isEmpty()){
-  res.status(400).send({
-    status:true,
-    message:error.array()
-  })
-}
-  const reqDto = req.body.game 
-  try {
-    const addGame = await UserService.addGame(reqDto)
-    return res.status(200).send({
-      status : true,
-      message : 'Succes Create Game Data',
-      data : reqDto
-    })
-  } catch (error) {
-    res.status(400).send({
-      status : false,
-      message : error.message,
-      data : null
-    })
-  }
+// app.post('/game/add',addGameValidator,async(req:Request,res:Response)=>{
+//   const error = validationResult(req)
+//   if(!error.isEmpty()){
+//   res.status(400).send({
+//     status:true,
+//     message:error.array()
+//   })
+// }
+//   const reqDto = req.body.game 
+//   try {
+//     const addGame = await UserService.addGame(reqDto)
+//     return res.status(200).send({
+//       status : true,
+//       message : 'Succes Create Game Data',
+//       data : reqDto
+//     })
+//   } catch (error) {
+//     res.status(400).send({
+//       status : false,
+//       message : error.message,
+//       data : null
+//     })
+//   }
 
-})
+// })
 
-app.post('/game/assigned',assignedValidator,async(req:Request,res:Response)=>{
-  const error = validationResult(req)
-  if(!error.isEmpty()){
-  res.status(400).send({
-    status:true,
-    message:error.array()
-  })
-}
-try {
-  const reqDto = req.body as IAssigneGame
-const assignedGame = await UserService.assignedGame(reqDto)
-res.send({
-  status : true,
-  message : 'Succes Assigned Game',
-  data : assignedGame
-})
+// app.post('/game/assigned',assignedValidator,async(req:Request,res:Response)=>{
+//   const error = validationResult(req)
+//   if(!error.isEmpty()){
+//   res.status(400).send({
+//     status:true,
+//     message:error.array()
+//   })
+// }
+// try {
+//   const reqDto = req.body as IAssigneGame
+// const assignedGame = await UserService.assignedGame(reqDto)
+// res.send({
+//   status : true,
+//   message : 'Succes Assigned Game',
+//   data : assignedGame
+// })
 
-} catch (error) {
-  res.status(400).send({
-    status : false,
-    message : error.message,
-    data : null
-  })
-}
+// } catch (error) {
+//   res.status(400).send({
+//     status : false,
+//     message : error.message,
+//     data : null
+//   })
+// }
 
-})
+// })
 
 
 

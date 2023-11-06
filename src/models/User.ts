@@ -20,19 +20,19 @@ export interface IUser {
 }
 
 export interface ICreateUser{
-  nama: string;
-  umur: string;
+  name: string;
+  age: number;
 }
 
 export interface IFilterList{
-  nama: string;
-  umur: string;
+  name: string;
+  age: number;
 }
 
 export interface IUpdateUser{
   id: string;
-  nama: string;
-  umur: string;
+  name: string;
+  age: number;
 }
 
 export interface IDeleteUser{
@@ -47,12 +47,43 @@ export interface ISessionUser {
 }
 
 export interface IAddGame {
-  nama : string;
+  name : string;
 }
 
 export interface IAssigneGame {
   user_id:string;
   id : string
+}
+
+export interface IRespGame {
+  id_game:string
+  name_game:string
+}
+
+export interface IRespListUserGame {
+  name_user:string
+  game:IRespGame[]
+}
+
+export interface IReqFilter{
+  name_user?:string
+  name_game?:string
+}
+export interface IAssignedCategory{
+  category_id:string;
+  id : string
+}
+
+export interface IRegister{
+  username : string;
+  password : string;
+  name : string;
+  age : number;
+}
+
+export interface ILogin{
+  username : string;
+  password : string;
 }
 
 
