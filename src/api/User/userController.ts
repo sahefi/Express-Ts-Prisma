@@ -5,7 +5,7 @@ import { createValidator, deleteValidator, updateValidator } from "@src/services
 import express, { Request, Response } from 'express';
 import { validationResult } from "express-validator";
 import { requestValidator } from "../BaseController";
-import {verifyJwt} from "src/services/Auth/AuthService"
+import {checkRole, verifyJwt} from "src/services/Auth/AuthService"
 
 
 const router = express.Router()
@@ -30,7 +30,7 @@ const router = express.Router()
   
 //   })
 
-  router.get('/all',verifyJwt,async(req: Request, res: Response) => {
+  router.get('/all',verifyJwt,checkRole(['Admin']),async(req: Request, res: Response) => {
     await requestValidator(req,res)
     const filter_nama = req.query.filter_nama as String
     try {

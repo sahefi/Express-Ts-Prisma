@@ -27,6 +27,6 @@ export const registerValidator = [
     body('username').notEmpty().withMessage('Username Tidak Boleh Kosong').isString().withMessage('Username Harus String'),
     body('password').notEmpty().withMessage('Password Tidak Boleh Kosong').isString().withMessage('Password Harus String'),
     body('name').notEmpty().withMessage('Name Tidak Boleh Kosong').isString().withMessage('Name Harus String'),
-    body('age').notEmpty().withMessage('Age Tidak Boleh Kosong').isInt({ min: 0}).withMessage('Age Harus Number')
-
+    body('age').notEmpty().withMessage('Age Tidak Boleh Kosong').isInt({ min: 0}).withMessage('Age Harus Number'),
+    body('jabatan_id').notEmpty().withMessage('Jabatan TIdak Boleh Kosong').isString().withMessage('Jabatan Harus Diisi')
 ]

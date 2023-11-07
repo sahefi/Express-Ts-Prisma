@@ -8,7 +8,7 @@ import { addGameValidator, assignedValidator } from '@src/services/Validations/U
 import express, { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import { requestValidator } from "../BaseController";
-import {verifyJwt} from "src/services/Auth/AuthService"
+import { checkRole, verifyJwt} from "src/services/Auth/AuthService"
 
 const router = express.Router()
 

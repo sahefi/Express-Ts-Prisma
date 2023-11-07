@@ -1,5 +1,7 @@
 // **** Variables **** //
 
+import { Role } from "@prisma/client";
+
 const INVALID_CONSTRUCTOR_PARAM = 'nameOrObj arg must a string or an ' + 
   'object with the appropriate user keys.';
 
@@ -79,11 +81,13 @@ export interface IRegister{
   password : string;
   name : string;
   age : number;
+  jabatan_id : string;
 }
 
 export interface ILogin{
   username : string;
   password : string;
+  role : Role;
 }
 
 

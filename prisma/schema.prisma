@@ -30,7 +30,10 @@ model User{
   createdAt DateTime @default(now())
   updateAt  DateTime @updatedAt 
   deletedAt DateTime?
-  age      Int?
+  age       Int?   
+  jabatan_id String?
+
+  jabatan Jabatan? @relation(fields: [jabatan_id], references: [id])
 
 
   games Game[]
@@ -44,5 +47,26 @@ model Category{
 
   games Game[]
 
+
+}
+
+model Role{
+  id      String      @id@default(uuid())
+  name    String      
+  createdAt DateTime    @default(now())
+  updateAt  DateTime    @updatedAt
+
+  jabatan Jabatan[]
+}
+
+model Jabatan{   
+  id      String      @id@default(uuid())
+  name    String      
+  createdAt DateTime    @default(now())
+  updateAt  DateTime    @updatedAt
+  role_id   String?
+  role Role? @relation(fields: [role_id], references: [id])
+
+  user User[]
 
 }

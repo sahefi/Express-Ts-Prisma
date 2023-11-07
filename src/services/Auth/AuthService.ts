@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { prisma } from '@src/server';
-import { ILogin, IRegister } from '@src/models/User';
+import User, { ILogin, IRegister } from '@src/models/User';
 import { NextFunction,Request,Response } from 'express';
+import { Role } from '@prisma/client';
 
 
 async function Register(req:IRegister) {
@@ -20,7 +21,8 @@ async function Register(req:IRegister) {
                 username:req.username,
                 password:hashed,
                 name:req.name,
-                age:req.age
+                age:req.age,
+                jabatan_id:req.jabatan_id
             }
         })
         return newUser
@@ -33,6 +35,13 @@ async function Login(req:ILogin) {
     const findUsername = await prisma.user.findUnique({
         where:{
             username:req.username
+        },include:{
+            jabatan: {
+                include:{
+                    role:true
+                }
+            }
+            
         }
     })
     if(!findUsername){
@@ -41,12 +50,14 @@ async function Login(req:ILogin) {
 
     const match = await bcrypt.compare(req.password,findUsername.password)
 
+
     if(match){
-        const token = jwt.sign({id:findUsername.id,username:findUsername.username},'secret-key',{expiresIn:'1h'})
+        const token = jwt.sign({id:findUsername.id,username:findUsername.username,jabatan: findUsername.jabatan?.name,role: findUsername.jabatan?.role?.name},'secret-key',{expiresIn:'1h'})
         return token
     }else{
         throw new Error("Email or Password doesn't match")
     }
+
 }
 
     export function verifyJwt(req:Request,res:Response,next: NextFunction) {
@@ -54,7 +65,8 @@ async function Login(req:ILogin) {
         const secertKey = "secret-key"
 
         try {
-            const verify = jwt.verify(token,secertKey)
+            const decode = jwt.verify(token,secertKey,)
+            req.body = decode
         } catch (error) {
             return res.send({
                 status:false,
@@ -63,6 +75,21 @@ async function Login(req:ILogin) {
         }
 
         next()
+
+    }
+
+    export function checkRole(role : string[]){
+        return (req:Request,res:Response,next:NextFunction)=>{
+            const user = req.body
+               if(role.includes(user.role)){
+                next()
+               }else{
+                return res.send({
+                    status:false,
+                    message:'Permission Denied'
+                })
+               }
+        }
 
     }
 export default {
