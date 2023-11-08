@@ -27,7 +27,7 @@ import userController from './api/User/userController';
 import gameController from './api/Game/gameController';
 import categoryController from './api/Category/categoryController';
 import authController from './api/Auth/AuthController';
-
+import jabatanController from './api/Jabatan/JabatanController'
 
 
 // **** Variables **** //
@@ -95,6 +95,7 @@ app.use('/users',userController)
 app.use('/game',gameController)
 app.use('/category',categoryController)
 app.use('/auth',authController)
+app.use('/jabatan',jabatanController)
 
 // app.post('/users/add',createValidator,async(req: Request, res: Response)=>{
 //   const error = validationResult(req)

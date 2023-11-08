@@ -63,10 +63,9 @@ async function Login(req:ILogin) {
     export function verifyJwt(req:Request,res:Response,next: NextFunction) {
         const token = req.header('Authorization') as string
         const secertKey = "secret-key"
-
+        
         try {
             const decode = jwt.verify(token,secertKey,)
-            req.body = decode
         } catch (error) {
             return res.send({
                 status:false,
