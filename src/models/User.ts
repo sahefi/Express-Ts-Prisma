@@ -89,6 +89,10 @@ export interface ILogin{
   password : string;
   role : Role;
 }
+export interface IlistGame{
+  page : number
+  per_page : number
+}
 
 
 // **** Functions **** //
