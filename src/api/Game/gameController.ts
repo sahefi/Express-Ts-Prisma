@@ -1,6 +1,6 @@
 
 
-import { IAddGame, IAssigneGame, IAssignedCategory } from '@src/models/User';
+import { IAddGame, IAssigneGame, IAssignedCategory, IlistGame } from '@src/models/User';
 import { app } from '@src/server';
 import GameService from '@src/services/Game/GameService';
 import UserService from '@src/services/User/UserService';
@@ -83,6 +83,20 @@ router.post('/add',verifyJwt,addGameValidator,async(req:Request,res:Response)=>{
       })
     } catch (error) {
       
+    }
+  })
+
+  router.get('/list',async(req:Request,res:Response)=>{
+    try {
+      const reqDto:IlistGame = {page:Number(req.query.page),per_page:Number(req.query.per_page)}
+      const listGame =  await GameService.listGame(reqDto)
+      res.status(200).send(listGame)
+    } catch (error) {
+      res.status(400).send({
+        status : false,
+        message : error.message,
+        data : null
+      })
     }
   })
 

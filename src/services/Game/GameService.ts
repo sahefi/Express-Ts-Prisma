@@ -1,4 +1,4 @@
-import { IAddGame, IAssigneGame, IAssignedCategory } from "@src/models/User"
+import { IAddGame, IAssigneGame, IAssignedCategory, IlistGame } from "@src/models/User"
 import { prisma } from "@src/server"
 
 async function addGame(req:IAddGame[]) {
@@ -76,9 +76,48 @@ async function assignedCategory(req:IAssignedCategory) {
   return assignedCategory
 }
 
+async function listGame(req:IlistGame) {
+  const page = +req.page||1
+  const take = +req.per_page||10
+  const skip = (page-1)*take
+  const nextPage = page+1
+  const prevPage = page-1
+  const listGame = await prisma.game.findMany({
+    skip:skip,take:take,
+    orderBy:{
+      name :"asc"
+    },select:{
+      id:true,
+      name:true,
+      category:{
+        select:{
+          name:true
+        }
+      }
+    }
+  })
+  const result = listGame.map((item)=>({
+    id: item.id,
+    name: item.name,
+    category: item?.category?.name||null
+  }))
+  const total = await prisma.game.count()
+  return {
+    page: page,
+    per_page: take,
+    total: total,
+    next_page: nextPage,
+    prev_page: prevPage,
+    status: true,
+    message: 'Success Retrieve Data Game',
+    data:result,
+  }
+}
+
 export default {
     addGame,
     assignedGame,
     listGameUser,
+    listGame,
     assignedCategory
 }
