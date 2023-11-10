@@ -1,5 +1,5 @@
 import UserRepo from '@src/repos/UserRepo';
-import User, { IAddGame, IAssigneGame, ICreateUser, IDeleteUser, IReqFilter, IRespListUserGame, IUpdateUser, IUser } from '@src/models/User';
+import User, { IAddGame, IAssigneGame, ICreateUser, IDeleteUser, IReqFilter, IRespListUserGame, IUpdateUser, IUser, IlistGame, IlistUser } from '@src/models/User';
 import { RouteError } from '@src/other/classes';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 import {prisma} from '@src/server';
@@ -195,6 +195,57 @@ async function listUserGame(req:IReqFilter) {
   
 }
 
+async function listUser(req:IlistUser) {
+  const page = + req.page||1
+  const take = + req.per_page||10
+  const skip = (page-1)*take
+  const nextPage = page+1
+  const prevPage = page-1
+  const listUser = await prisma.user.findMany({
+    skip:skip,take:take,
+    where:{
+      jabatan:{
+        name:
+        {
+        contains:req.filter_name,
+        mode:'insensitive',
+        }
+      },
+    },
+    orderBy:{
+      name:"asc"
+    },select:{
+      id:true,
+      name:true,
+      username:true,
+      age:true,
+      deletedAt:true,
+      jabatan:{
+        select:{
+          name:true
+        }
+      }
+    }
+  })
+  const result = listUser.map((item)=>({
+    id: item.id,
+    name: item.name,
+    username: item.username,
+    age : item.age,
+    deleted_at : item.deletedAt,
+    jabatan : item?.jabatan?.name || null
+  }))
+  return {
+    page: page,
+    per_page: take,
+    next_page: nextPage,
+    prev_page: prevPage,
+    status: true,
+    message: 'Success Retrieve Data Game',
+    data:result,
+  }
+}
+
 
 //End Point Game
 
@@ -206,6 +257,7 @@ export default {
   getUser,
   updateUser,
   // createUser,
+  listUser,
   deletUser,
   listUserGame,
   getAll,
