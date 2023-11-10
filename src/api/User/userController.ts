@@ -1,4 +1,4 @@
-import { IDeleteUser, IReqFilter, IUpdateUser } from "@src/models/User";
+import { IDeleteUser, IReqFilter, IUpdateUser, IlistUser } from "@src/models/User";
 import { prisma } from "@src/server";
 import UserService from "@src/services/User/UserService";
 import { createValidator, deleteValidator, updateValidator } from "@src/services/Validations/UserValidations";
@@ -151,5 +151,11 @@ router.get('/detail/:id',verifyJwt,async(req:Request,res:Response)=>{
     })
   })
 
+    router.get ('/list',async(req:Request,res:Response)=>{
+      const reqDto:IlistUser = {page:Number(req.query.page),per_page:Number(req.query.per_page),filter_name:req.query.filter_name as string}
+      console.log(req.query.filter_name)
+      const listUser = await UserService.listUser(reqDto)
+      res.status(200).send(listUser)
+    })
   export default router
   

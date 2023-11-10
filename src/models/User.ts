@@ -93,6 +93,12 @@ export interface IlistGame{
   page : number
   per_page : number
 }
+export interface IlistUser{
+  page : number
+  per_page : number
+  filter_name: string
+}
+
 
 
 // **** Functions **** //
