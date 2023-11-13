@@ -17,3 +17,52 @@ export class RouteError extends Error {
     this.status = status;
   }
 }
+
+export class BadRequestExcepetion extends Error {
+  
+  public status: HttpStatusCodes;
+
+  public constructor(message:string){
+      super(message);
+      this.status = HttpStatusCodes.BAD_REQUEST
+  }
+}
+
+export class NotFoundException extends Error {
+
+  public status: HttpStatusCodes;
+
+  public constructor(message:string){
+      super(message)
+      this.status = HttpStatusCodes.NOT_FOUND
+  }
+}
+
+export class ConflictException extends Error {
+  public status: HttpStatusCodes;
+
+  public constructor(message:string){
+    super(message)
+    this.status = HttpStatusCodes.CONFLICT
+  }
+}
+
+export class ForbiddenException extends Error {
+  public status: HttpStatusCodes
+
+  public constructor(message:string){
+    super(message)
+    this.status = HttpStatusCodes.FORBIDDEN
+  }
+}
+
+export class UnauthorizedException extends Error {
+  public status : HttpStatusCodes
+
+  public constructor(message:string){
+    super(message)
+    this.status = HttpStatusCodes.UNAUTHORIZED
+  }
+}
+
+// export class 

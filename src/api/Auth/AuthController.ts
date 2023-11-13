@@ -3,34 +3,34 @@ import AuthService from '@src/services/Auth/AuthService';
 import { registerValidator } from '@src/services/Validations/UserValidations';
 import express, { Request, Response } from 'express';
 import { requestValidator } from '../BaseController';
+import { BadRequestExcepetion, NotFoundException, RouteError } from '@src/other/classes';
 
 const router = express.Router()
 router.post('/register',registerValidator,async(req:Request,res:Response)=>{
     await requestValidator(req,res)
     try {
         const reqDto = req.body as IRegister
-        const register = await AuthService.Register(reqDto)
+        const register = await AuthService.Register(reqDto,res)
+        console.log(register)
         res.status(200).send({
             status:true,
             message:'Success',
             data:register
         })
     } catch (error) {
-        if(error.message === 'username Is Already Exist'){
-            res.status(400).send({
+        if(error.status){
+            return res.status(error.status).send({
                 status:false,
                 message:error.message,
                 data:null
             })
         }else{
-            res.status(500).send({
+            return res.status(500).send({
                 status:false,
                 message:error.message,
                 data:null
-        })
-    }
-
-        
+            })
+        }
     }
 })
 router.post('/login',async(req:Request,res:Response)=>{
@@ -43,24 +43,18 @@ router.post('/login',async(req:Request,res:Response)=>{
             data:login
         })
     } catch (error) {
-        if(error.message === 'Username Not Found'){
-            res.status(400).send({
-            status:false,
-            message:error.message,
-            data:null
-            })
-        }if(error.message === "Email or Password doesn't match"){
-            res.status(405).send({
+        if(error.status){
+            res.status(error.status).send({
                 status:false,
                 message:error.message,
                 data:null
-                })
+            })
         }else{
             res.status(500).send({
                 status:false,
                 message:error.message,
                 data:null
-                })
+            })
         }
     }
 })

@@ -1,19 +1,20 @@
-import jwt from 'jsonwebtoken';
+import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { prisma } from '@src/server';
 import User, { ILogin, IRegister } from '@src/models/User';
 import { NextFunction,Request,Response } from 'express';
-import { Role } from '@prisma/client';
+import { BadRequestExcepetion, ForbiddenException, NotFoundException, RouteError, UnauthorizedException } from '@src/other/classes';
+import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
 
-async function Register(req:IRegister) {
+async function Register(req:IRegister,res:Response) {
         const findUser = await prisma.user.findUnique({
             where:{
                 username:req.username
             }
         })
         if(findUser){
-            throw new Error('username Is Already Exist')
+            throw new BadRequestExcepetion("Username Is Already Exist")
         }
         const hashed = await bcrypt.hash(req.password,10)
         const newUser = await prisma.user.create({
@@ -45,7 +46,7 @@ async function Login(req:ILogin) {
         }
     })
     if(!findUsername){
-        throw new Error ('Username Not Found')
+        throw new NotFoundException ('Username Not Found')
     }
 
     const match = await bcrypt.compare(req.password,findUsername.password)
@@ -55,7 +56,7 @@ async function Login(req:ILogin) {
         const token = jwt.sign({id:findUsername.id,username:findUsername.username,jabatan: findUsername.jabatan?.name,role: findUsername.jabatan?.role?.name},'secret-key',{expiresIn:'1h'})
         return token
     }else{
-        throw new Error("Email or Password doesn't match")
+        throw new BadRequestExcepetion("Email or Password Doesn't Match")
     }
 
 }
@@ -65,29 +66,53 @@ async function Login(req:ILogin) {
         const secertKey = "secret-key"
         
         try {
+            if(!token){
+                throw new UnauthorizedException("Token Tidak Valid")
+            }
             const decode = jwt.verify(token,secertKey,)
+            next()
         } catch (error) {
-            return res.send({
-                status:false,
-                message:'Token tidak valid'
-            })
+            
+            // console.log(TokenExpiredError.)
+            if (error instanceof TokenExpiredError) {
+                
+                return res.status(401).json({
+                    status: false,
+                    message: 'Token Expired',
+                    data: null
+                });
+            }else {
+                res.status(error.status).send({
+                    status:false,
+                    message:error.message,
+                    data:null
+                })
+            }
+            
+            
         }
 
-        next()
+        
 
     }
 
     export function checkRole(role : string[]){
         return (req:Request,res:Response,next:NextFunction)=>{
+        try {
             const user = req.body
                if(role.includes(user.role)){
                 next()
                }else{
-                return res.send({
-                    status:false,
-                    message:'Permission Denied'
-                })
+                throw new ForbiddenException("Permission Denied")
                }
+        } catch (error) {
+            res.status(error.status).send({
+                status:false,
+                message:error.message,
+                data:null
+            })
+        }
+            
         }
 
     }
