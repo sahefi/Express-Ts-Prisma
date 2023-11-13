@@ -18,7 +18,7 @@ import EnvVars from '@src/constants/EnvVars';
 import HttpStatusCodes from '@src/constants/HttpStatusCodes';
 
 import { NodeEnvs } from '@src/constants/misc';
-import { RouteError } from '@src/other/classes';
+import { BadRequestExcepetion, ForbiddenException, NotFoundException, RouteError, UnauthorizedException } from '@src/other/classes';
 import {PrismaClient} from "@prisma/client"
 import User, { IAddGame, IAssigneGame, IDeleteUser, IUpdateUser } from './models/User';
 import UserService from './services/User/UserService';
@@ -28,6 +28,7 @@ import gameController from './api/Game/gameController';
 import categoryController from './api/Category/categoryController';
 import authController from './api/Auth/AuthController';
 import jabatanController from './api/Jabatan/JabatanController'
+import { error } from 'console';
 
 
 // **** Variables **** //
@@ -71,7 +72,16 @@ app.use((
   let status = HttpStatusCodes.BAD_REQUEST;
   if (err instanceof RouteError) {
     status = err.status;
+  } else if(err instanceof BadRequestExcepetion){
+    status = HttpStatusCodes.BAD_REQUEST
+  } else if (err instanceof NotFoundException){
+    status = HttpStatusCodes.NOT_FOUND
+  } else if (err instanceof ForbiddenException){
+    status = HttpStatusCodes.FORBIDDEN
+  } else if (err instanceof UnauthorizedException){
+    status = HttpStatusCodes.UNAUTHORIZED
   }
+  console.log(status)
   return res.status(status).json({ error: err.message });
 });
 

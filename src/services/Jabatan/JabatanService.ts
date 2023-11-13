@@ -1,4 +1,5 @@
 import { IassignedJabatan, IlistJabatan, } from "@src/models/Jabatan";
+import { NotFoundException } from "@src/other/classes";
 import { prisma } from "@src/server";
 
 async function assignedjabatan(req:IassignedJabatan) {
@@ -9,7 +10,7 @@ async function assignedjabatan(req:IassignedJabatan) {
     })
     
     if(!findjabatan){
-        throw new Error ('Failed Find Jabatan')
+        throw new NotFoundException ('Failed Find Jabatan')
     }
 
     const assignedjabatan = await prisma.jabatan.update({
@@ -18,6 +19,9 @@ async function assignedjabatan(req:IassignedJabatan) {
         },
         data:{role_id:req.role_id}
     })
+
+
+    
     return assignedjabatan
     
 }
